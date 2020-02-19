@@ -1,5 +1,4 @@
 import requests
-from StringIO import StringIO
 
 import config
 from exceptions import MissingCredentialsException, InvalidCredentialsException
@@ -25,10 +24,10 @@ class DaaS(metaclass=ThreadSafeSingleton):
         return method(url, data) if data else method(url)
 
     def _post(self, url, data):
-        return requests.post(url, method=requests.post, data)
+        return self._request(url, method=requests.post, data=data)
 
     def _get(self, url):
-        return requests.post(url, method=requests.post)
+        return self._request(url, method=requests.post)
 
     def _get_token(self):
         if not config.USERNAME or not config.PASSWORD:
@@ -51,5 +50,3 @@ class DaaS(metaclass=ThreadSafeSingleton):
         response = self._post('api/upload/', data)
         assert response.status_code == 202
         return response
-
-

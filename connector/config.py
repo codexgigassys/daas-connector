@@ -1,18 +1,18 @@
 # --- Connection configuration ---
 PROTOCOL = 'http'
 
-IP = 'daas_api'
+IP = '138.197.102.77'
 
-PORT = 433
+PORT = 443
 
 
 # --- Credentials configuration ---
 """ You can set either the token or username + password. """
 TOKEN = ''
 
-USERNAME = ''
+USERNAME = 'codex'
 
-PASSWORD = ''
+PASSWORD = 'codexcodex'
 
 
 # --- Callback configuration ---
