@@ -40,7 +40,7 @@ class DaaS(metaclass=ThreadSafeSingleton):
     def download_source_code(self, daas_sample_id):
         return self._get('api/download_source_code/%s/' % daas_sample_id).content
 
-    def upload_sample(self, file_url, file_name, zip_password='codex', force_reprocess=False):
+    def send_sample_url(self, file_url, file_name, zip_password='codex', force_reprocess=False):
         data = {'file_url': file_url,
                 'file_name': file_name,
                 'zip_password': zip_password,
