@@ -1,13 +1,12 @@
 import requests
-import hashlib
 
 from response_mock import ResponseMock
 
 
 class DaaSMock:
-    def __index__(self, callback_url=None):
+    def __index__(self, config):
         self.mocked_responses = {}
-        self.callback_url = callback_url
+        self.callback_url = config['callback_url'] if 'callback_url' in config else None
 
     """ Mocked methods """
     def download_source_code(self, daas_sample_id):

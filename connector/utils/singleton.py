@@ -8,9 +8,9 @@ def synchronized(lock):
     """ Synchronization decorator """
     def wrapper(f):
         @functools.wraps(f)
-        def inner_wrapper(*args, **kw):
+        def inner_wrapper(*args, **kwargs):
             with lock:
-                return f(*args, **kw)
+                return f(*args, **kwargs)
         return inner_wrapper
     return wrapper
 

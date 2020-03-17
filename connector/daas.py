@@ -1,23 +1,14 @@
 import requests
 
-import config
 from exceptions import MissingCredentialsException, InvalidCredentialsException
 from utils import ThreadSafeSingleton
 
 
 class DaaS(metaclass=ThreadSafeSingleton):
-    def __init__(self):
-        self._token = config.TOKEN
-
-    @property
-    def base_url(self):
-        return '%s://%s:%s' % (config.PROTOCOL, config.IP, config.PORT)
-
-    @property
-    def token(self):
-        if not self._token:
-            self._token = self._get_token()
-        return self._token
+    def __init__(self, config):
+        self.token = self._get_token(config['username'], config['password']) if not config['token'] else config['token']
+        self.base_url = '%s://%s:%s' % (config['protocol'], config['ip'], config['port'])
+        self.callback_url = config['callback_url'] if 'callback_url' in config else None
 
     def _request(self, url, method, data=None):
         url = '%s/%s' % (self.base_url, url)
@@ -29,10 +20,10 @@ class DaaS(metaclass=ThreadSafeSingleton):
     def _get(self, url):
         return self._request(url, method=requests.post)
 
-    def _get_token(self):
-        if not config.USERNAME or not config.PASSWORD:
+    def _get_token(self, username, password):
+        if not username or not password:
             raise MissingCredentialsException()
-        response = self._post('api/get_token/', {'username': config.USERNAME, 'password': config.PASSWORD})
+        response = self._post('api/get_token/', {'username': username, 'password': password})
         if response.status_code != 200:
             raise InvalidCredentialsException()
         return response.json()['token']
@@ -45,8 +36,8 @@ class DaaS(metaclass=ThreadSafeSingleton):
                 'file_name': file_name,
                 'zip_password': zip_password,
                 'force_reprocess': force_reprocess}
-        if config.CALLBACK_URL:
-            data['callback'] = config.CALLBACK_URL
+        if self.callback_url:
+            data['callback'] = self.callback_url
         response = self._post('api/upload/', data)
         assert response.status_code == 202
         return response
