@@ -4,7 +4,9 @@ from exceptions import MissingCredentialsException, InvalidCredentialsException
 from utils import ThreadSafeSingleton
 
 
-class DaaS(metaclass=ThreadSafeSingleton):
+class DaaS(object):
+    __metaclass__ = ThreadSafeSingleton
+
     def __init__(self, config):
         self.token = self._get_token(config['username'], config['password']) if not config['token'] else config['token']
         self.base_url = '%s://%s:%s' % (config['protocol'], config['ip'], config['port'])
