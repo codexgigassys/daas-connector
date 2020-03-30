@@ -30,8 +30,8 @@ class DaaS(object):
         return response.json()['token']
 
     def _check_status_code(self, method_name, real_status_code, expected_status_code):
-        error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, real_status_code, expected_status_code)
-        assert real_status_code == 200, error_message
+        error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, expected_status_code, real_status_code)
+        assert real_status_code == expected_status_code, error_message
 
     def download_source_code(self, daas_sample_id):
         response = self._get('api/download_source_code/%s/' % daas_sample_id).content
