@@ -1,1 +1,1 @@
-from singleton import ThreadSafeSingleton
+from singleton_decorator import singleton

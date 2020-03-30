@@ -1,9 +1,11 @@
 import requests
 
 from response_mock import ResponseMock
+from connector.utils import singleton
 
 
-class DaaSMock:
+@singleton
+class DaaSMock(object):
     def __index__(self, config):
         self.mocked_responses = {}
         self.callback_url = config['callback_url'] if 'callback_url' in config else None
@@ -27,5 +29,3 @@ class DaaSMock:
     def trigger_callback(self, file_name):
         if self.mocked_responses[file_name]['triggers_callback']:
             requests.post(self.callback_url, {'id': self.mocked_responses[file_name]['daas_sample_id']})
-
-
