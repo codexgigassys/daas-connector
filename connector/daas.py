@@ -29,8 +29,14 @@ class DaaS(object):
             raise InvalidCredentialsException()
         return response.json()['token']
 
+    def _check_status_code(self, method_name, real_status_code, expected_status_code):
+        error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, real_status_code, expected_status_code)
+        assert real_status_code == 200, error_message
+
     def download_source_code(self, daas_sample_id):
-        return self._get('api/download_source_code/%s/' % daas_sample_id).content
+        response = self._get('api/download_source_code/%s/' % daas_sample_id).content
+        self._check_status_code('download_source_code', response.status_code, 200)
+        return response
 
     def send_sample_url(self, file_url, file_name, zip_password='codex', force_reprocess=False):
         data = {'file_url': file_url,
@@ -40,5 +46,5 @@ class DaaS(object):
         if self.callback_url:
             data['callback'] = self.callback_url
         response = self._post('api/upload/', data)
-        assert response.status_code == 202
+        self._check_status_code('send_sample_url', response.status_code, 202)
         return response
