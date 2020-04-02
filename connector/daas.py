@@ -13,7 +13,7 @@ class DaaS(object):
 
     def _request(self, url, method, data=None):
         url = '%s/%s' % (self.base_url, url)
-        return method(url, json=data) if data else method(url)
+        return method(url, json=data, verify=False) if data else method(url, verify=False)
 
     def _post(self, url, data):
         return self._request(url, method=requests.post, data=data)
