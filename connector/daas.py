@@ -1,4 +1,5 @@
 import requests
+import socket
 
 from exceptions import MissingCredentialsException, InvalidCredentialsException
 from utils import singleton
@@ -8,8 +9,17 @@ from utils import singleton
 class DaaS(object):
     def __init__(self, config):
         self.token = self._get_token(config['username'], config['password']) if 'token' not in config else config['token']
-        self.base_url = '%s://%s:%s' % (config['protocol'], config['ip'], config['port'])
-        self.callback_url = config['callback_url'] if 'callback_url' in config else None
+        self.base_url = self._build_base_url(config, 'daas')
+        callback_base_url = self._build_base_url(config, 'callback')
+        callback_path = config['callback_path']
+        self.callback_url = '%s/%s' % (callback_base_url, callback_path)
+
+    def _build_base_url(self, config, prefix):
+        callback_protocol = config['%s_protocol' % prefix]
+        # Get the IP to not use a host with underscores and avoid django raising RFC errors.
+        callback_ip = socket.gethostbyname(config['%s_ip_or_container' % prefix])
+        callback_port = config['%s_port' % prefix]
+        return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
 
     def _request(self, url, method, data=None):
         url = '%s/%s' % (self.base_url, url)
