@@ -1,5 +1,7 @@
+import pathmagic
 import requests
 import socket
+import logging
 
 from env import envget
 from exceptions import MissingCredentialsException, InvalidCredentialsException
@@ -9,11 +11,13 @@ from utils import singleton
 @singleton
 class DaaS(object):
     def __init__(self):
-        self.token = self._get_token(envget('daas.credentials.username'), envget('daas.credentials.password'))
+        # Build URLs
         self.base_url = self._build_base_url('api')
         callback_base_url = self._build_base_url('callback')
         callback_path = envget('daas.callback.path')
         self.callback_url = '%s/%s' % (callback_base_url, callback_path)
+        # Get token
+        self.token = envget('daas.credentials.token')
 
     def _build_base_url(self, prefix):
         callback_protocol = envget('daas.%s.protocol' % prefix)
@@ -31,14 +35,6 @@ class DaaS(object):
 
     def _get(self, url):
         return self._request(url, method=requests.post)
-
-    def _get_token(self, username, password):
-        if not username or not password:
-            raise MissingCredentialsException()
-        response = self._post('api/get_token/', {'username': username, 'password': password})
-        if response.status_code != 200:
-            raise InvalidCredentialsException()
-        return response.json()['token']
 
     def _check_status_code(self, method_name, real_status_code, expected_status_code):
         error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, expected_status_code, real_status_code)
