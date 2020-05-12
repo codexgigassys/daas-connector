@@ -1,24 +1,25 @@
 import requests
 import socket
 
+from env import envget
 from exceptions import MissingCredentialsException, InvalidCredentialsException
 from utils import singleton
 
 
 @singleton
 class DaaS(object):
-    def __init__(self, config):
-        self.token = self._get_token(config['username'], config['password']) if 'token' not in config else config['token']
-        self.base_url = self._build_base_url(config, 'daas')
-        callback_base_url = self._build_base_url(config, 'callback')
-        callback_path = config['callback_path']
+    def __init__(self):
+        self.token = self._get_token(envget('daas.credentials.username'), envget('daas.credentials.password'))
+        self.base_url = self._build_base_url('api')
+        callback_base_url = self._build_base_url('callback')
+        callback_path = envget('daas.callback.path')
         self.callback_url = '%s/%s' % (callback_base_url, callback_path)
 
-    def _build_base_url(self, config, prefix):
-        callback_protocol = config['%s_protocol' % prefix]
+    def _build_base_url(self, prefix):
+        callback_protocol = envget('daas.%s.protocol' % prefix)
         # Get the IP to not use a host with underscores and avoid django raising RFC errors.
-        callback_ip = socket.gethostbyname(config['%s_ip_or_container' % prefix])
-        callback_port = config['%s_port' % prefix]
+        callback_ip = socket.gethostbyname(envget('daas.%s.domain' % prefix))
+        callback_port = envget('daas.%s.port' % prefix)
         return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
 
     def _request(self, url, method, data=None):
