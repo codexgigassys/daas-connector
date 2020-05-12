@@ -40,8 +40,8 @@ class DaaS(object):
         error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, expected_status_code, real_status_code)
         assert real_status_code == expected_status_code, error_message
 
-    def download_source_code(self, daas_sample_id):
-        response = self._get('api/download_source_code/%s/' % daas_sample_id).content
+    def download_source_code(self, sample_sha1):
+        response = self._get('api/download_source_code/%s/' % sample_sha1).content
         self._check_status_code('download_source_code', response.status_code, 200)
         return response
 
