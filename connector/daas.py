@@ -3,9 +3,14 @@ import requests
 import socket
 import logging
 
-from env import envget
 from exceptions import MissingCredentialsException, InvalidCredentialsException, UnexpectedDaaSResponseException
 from utils import singleton
+# Try to import envget from codex
+try:
+    from env import envget
+except ImportError:
+    raise Exception('Create an "envget" function inside an "env" file to load configuration')
+
 
 
 @singleton
@@ -26,24 +31,23 @@ class DaaS(object):
         callback_port = envget('daas.%s.port' % prefix)
         return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
 
-    def _request(self, url, method, data=None):
+    def _request(self, url, method, data=None, expected_status_code=None):
         url = '%s/%s' % (self.base_url, url)
-        return method(url, json=data, verify=False) if data else method(url, verify=False)
+        response = method(url, json=data, verify=False) if data else method(url, verify=False)
+        if expected_status_code:
+            error_message = 'requests.%s(%s, json=%s) status code is %s, while expected status code is %s'\
+                            % (method.__name__, url, data, response.status_code, expected_status_code)
+            assert response.status_code == expected_status_code, error_message
+        return response
 
-    def _post(self, url, data):
-        return self._request(url, method=requests.post, data=data)
+    def _post(self, url, **kwargs):
+        return self._request(url, method=requests.post, **kwargs)
 
-    def _get(self, url):
-        return self._request(url, method=requests.get)
-
-    def _check_status_code(self, method_name, real_status_code, expected_status_code):
-        error_message = 'status code of DaaS(...).%s(...) should be %s, but it is %s.' % (method_name, expected_status_code, real_status_code)
-        assert real_status_code == expected_status_code, error_message
+    def _get(self, url, **kwargs):
+        return self._request(url, method=requests.get, **kwargs)
 
     def download_source_code(self, sample_sha1):
-        response = self._get('api/download_source_code/%s' % sample_sha1)
-        self._check_status_code('download_source_code', response.status_code, 200)
-        return response.content
+        return self._get('api/download_source_code/%s' % sample_sha1, expected_status_code=200).content
 
     def send_sample_url(self, file_url, file_name, zip_password='codex', force_reprocess=False):
         data = {'file_url': file_url,
@@ -52,9 +56,7 @@ class DaaS(object):
                 'force_reprocess': force_reprocess}
         if self.callback_url:
             data['callback'] = self.callback_url
-        response = self._post('api/upload', data)
-        self._check_status_code('send_sample_url', response.status_code, 202)
-        return response
+        return self._post('api/upload', data=data, expected_status_code=202)
 
     def has_sample(self, hash):
         response = self._get('api/get_sample_from_hash/%s' % hash)
