@@ -3,7 +3,7 @@ import requests
 import socket
 import logging
 
-from exceptions import MissingCredentialsException, InvalidCredentialsException, UnexpectedDaaSResponseException
+from exceptions import UnexpectedDaaSResponseException
 from utils import singleton
 # Try to import envget from codex
 try:
