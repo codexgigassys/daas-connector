@@ -12,7 +12,6 @@ except ImportError:
     raise Exception('Create an "envget" function inside an "env" file to load configuration')
 
 
-
 @singleton
 class DaaS(object):
     def __init__(self):
