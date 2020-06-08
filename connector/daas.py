@@ -22,6 +22,9 @@ class DaaS(object):
         self.callback_url = '%s/%s' % (callback_base_url, callback_path)
         # Get token
         self.token = envget('daas.credentials.token')
+        # This is parametrized to allow dependency injection. We can not do it at __init__'s parameter level because
+        # this is a singleton.
+        self._requests_library = requests
 
     def _build_base_url(self, prefix):
         callback_protocol = envget('daas.%s.protocol' % prefix)
@@ -40,10 +43,10 @@ class DaaS(object):
         return response
 
     def _post(self, url, **kwargs):
-        return self._request(url, method=requests.post, **kwargs)
+        return self._request(url, method=self._requests_library.post, **kwargs)
 
     def _get(self, url, **kwargs):
-        return self._request(url, method=requests.get, **kwargs)
+        return self._request(url, method=self._requests_library.get, **kwargs)
 
     def download_source_code(self, sample_sha1):
         return self._get('api/download_source_code/%s' % sample_sha1, expected_status_code=200).content
