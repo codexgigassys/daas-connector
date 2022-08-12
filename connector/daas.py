@@ -3,7 +3,10 @@ import requests
 import socket
 import logging
 
-from exceptions import UnexpectedDaaSResponseException
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+from exceptions import DaaSResponseException
+from exceptions import DaaSRequestException
 from utils import singleton
 # Try to import envget from codex
 try:
@@ -31,15 +34,32 @@ class DaaS(object):
         # Get the IP to not use a host with underscores and avoid django raising RFC errors.
         callback_ip = socket.gethostbyname(envget('daas.%s.domain' % prefix))
         callback_port = envget('daas.%s.port' % prefix)
-        return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
+        try:
+            callback_user = envget('daas.%s.user' % prefix)
+            callback_password = envget('daas.%s.password' % prefix)
+        except ValueError:
+            callback_user = None
+            callback_password = None
+        if callback_user is not None:
+            return '%s://%s:%s@%s:%s' % (callback_protocol, callback_user, callback_password, callback_ip, callback_port)
+        else:
+            return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
 
     def _request(self, url, method, data=None, expected_status_code=None):
         url = '%s/%s' % (self.base_url, url)
-        response = method(url, json=data, verify=False) if data else method(url, verify=False)
+        verify = envget('daas.api.verify_ssl_cert')
+        headers = {'Authorization': 'Token %s' % self.token}
+        timeout = (envget("daas.api.timeout"), envget("daas.api.timeout"))
+        try:
+            response = method(url, json=data, verify=verify, timeout=timeout, headers=headers) if data else method(url, verify=verify, timeout=timeout, headers=headers)
+        except (ConnectionError, Timeout) as e:
+            raise DaaSRequestException(e)
+
         if expected_status_code:
-            error_message = 'requests.%s(%s, json=%s) status code is %s, while expected status code is %s'\
-                            % (method.__name__, url, data, response.status_code, expected_status_code)
-            assert response.status_code == expected_status_code, error_message
+            if response.status_code != expected_status_code:
+                error_message = 'requests.%s(%s, json=%s) status code is %s, while expected status code is %s'\
+                                % (method.__name__, url, data, response.status_code, expected_status_code)
+                raise DaaSResponseException(error_message)
         return response
 
     def _post(self, url, **kwargs):
@@ -67,7 +87,7 @@ class DaaS(object):
         elif response.status_code == 404:
             uploaded_to_daas = False
         else:
-            raise UnexpectedDaaSResponseException()
+            raise DaaSResponseException('api/get_sample_from_hash/<hash> returned status %s' % response.status_code)
         return uploaded_to_daas
 
     def sample_was_decompiled(self, hash):
@@ -79,5 +99,5 @@ class DaaS(object):
         elif response.status_code == 404:
             decompiled = False
         else:
-            raise UnexpectedDaaSResponseException()
+            raise DaaSResponseException('api/get_sample_from_hash/<hash> returned status %s' % response.status_code)
         return decompiled
