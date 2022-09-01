@@ -74,6 +74,7 @@ class DaaS(object):
     def send_sample_url(self, file_url, file_name, zip_password='codex', force_reprocess=False):
         data = {'file_url': file_url,
                 'file_name': file_name,
+                'sha1': file_name,
                 'zip_password': zip_password,
                 'force_reprocess': force_reprocess}
         if self.callback_url:
