@@ -8,3 +8,7 @@ class DaaSResponseException(DaaSException):
 
 class DaaSRequestException(DaaSException):
     pass
+
+
+class DaaSNotFoundError(DaaSResponseException):
+    pass
