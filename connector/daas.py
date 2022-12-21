@@ -58,13 +58,12 @@ class DaaS(object):
 
         if expected_status_code:
             if response.status_code != expected_status_code:
+                error_message = 'requests.%s(%s, json=%s) status code is %s, while expected status code is %s'\
+                                % (method.__name__, url, data, response.status_code, expected_status_code)
                 if response.status_code == 404:
                     raise DaaSNotFoundError(error_message)
                 else:
                     raise DaaSResponseException(error_message)
-                error_message = 'requests.%s(%s, json=%s) status code is %s, while expected status code is %s'\
-                                % (method.__name__, url, data, response.status_code, expected_status_code)
-                raise DaaSResponseException(error_message)
         return response
 
     def _post(self, url, **kwargs):
