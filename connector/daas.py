@@ -1,14 +1,14 @@
-import pathmagic
+from __future__ import absolute_import
 import requests
 import socket
 import logging
 
 from requests.exceptions import ConnectionError
 from requests.exceptions import Timeout
-from exceptions import DaaSResponseException
-from exceptions import DaaSRequestException
-from exceptions import DaaSNotFoundError
-from utils import singleton
+from .exceptions import DaaSResponseException
+from .exceptions import DaaSRequestException
+from .exceptions import DaaSNotFoundError
+from .utils import singleton
 # Try to import envget from codex
 try:
     from env import envget
