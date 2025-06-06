@@ -32,8 +32,7 @@ class DaaS(object):
 
     def _build_base_url(self, prefix):
         callback_protocol = envget('daas.%s.protocol' % prefix)
-        # Get the IP to not use a host with underscores and avoid django raising RFC errors.
-        callback_ip = socket.gethostbyname(envget('daas.%s.domain' % prefix))
+        callback_domain = envget('daas.%s.domain' % prefix)
         callback_port = envget('daas.%s.port' % prefix)
         try:
             callback_user = envget('daas.%s.user' % prefix)
@@ -42,9 +41,9 @@ class DaaS(object):
             callback_user = None
             callback_password = None
         if callback_user is not None:
-            return '%s://%s:%s@%s:%s' % (callback_protocol, callback_user, callback_password, callback_ip, callback_port)
+            return '%s://%s:%s@%s:%s' % (callback_protocol, callback_user, callback_password, callback_domain, callback_port)
         else:
-            return '%s://%s:%s' % (callback_protocol, callback_ip, callback_port)
+            return '%s://%s:%s' % (callback_protocol, callback_domain, callback_port)
 
     def _request(self, url, method, data=None, expected_status_code=None):
         url = '%s/%s' % (self.base_url, url)
