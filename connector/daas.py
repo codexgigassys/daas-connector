@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 import requests
 import socket
 import logging
@@ -9,11 +9,14 @@ from .exceptions import DaaSResponseException
 from .exceptions import DaaSRequestException
 from .exceptions import DaaSNotFoundError
 from .utils import singleton
-# Try to import envget from codex
+# Try to import envget from codex (works under src.* package or with /myapp on path)
 try:
-    from env import envget
+    from ....env import envget
 except ImportError:
-    raise Exception('Create an "envget" function inside an "env" file to load configuration')
+    try:
+        from src.env import envget
+    except ImportError:
+        from env import envget
 
 
 @singleton
