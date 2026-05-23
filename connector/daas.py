@@ -9,14 +9,7 @@ from .exceptions import DaaSResponseException
 from .exceptions import DaaSRequestException
 from .exceptions import DaaSNotFoundError
 from .utils import singleton
-# Try to import envget from codex (works under src.* package or with /myapp on path)
-try:
-    from ....env import envget
-except ImportError:
-    try:
-        from src.env import envget
-    except ImportError:
-        from env import envget
+from src.env import envget
 
 
 @singleton
